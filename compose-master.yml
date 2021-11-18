@@ -1,0 +1,72 @@
+version: "3.7"
+
+services:
+  db:
+    image: mongo:4.4
+    container_name: academy_db
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: myb
+      MONGO_INITDB_ROOT_PASSWORD: ngoEGjAPHXiNsUP6r
+    volumes:
+      - db:/data/db
+    ports: 
+      - "27017:27017"
+    networks:
+      - private
+
+  app:
+    image: ghcr.io/zgandrew/academy.api:master
+    container_name: academy_api
+    restart: always
+    volumes:
+      - /workspace/tochkarosta:/data/files
+    environment:
+      MONGO_HOST: db
+      MONGO_PORT: 27017
+      MONGO_DB: myb
+      MONGO_USER: myb
+      MONGO_PASSWORD: ngoEGjAPHXiNsUP6r
+      APP_FILES: /data/files
+      COOKIES_DOMAIN: tochkarosta.info
+      PROMO_FOR_ASD: АСД
+      ACCEPT_TOKEN_SECRET: 4735cdee3c617410db9daec15f47
+      REFRESH_TOKEN_SECRET: 004dd26da0610a752fb4cbddf3fc
+      PAYMENT_TOKEN_SECRET: 4bec956a8d6081af59da6a9a4bc8
+      ACCEPT_TOKEN_MAX_AGE: 86400
+      REFRESH_TOKEN_MAX_AGE: 864000
+      PAYMENT_TOKEN_MAX_AGE: 600
+      ADMIN_TOKEN: ef769c0e6f5b594b429b2de3a3a1
+      ADMIN_EMAIL: tochkarostaplatform@gmail.com
+      ADMIN_PASSWORD: b82ca6367cade48cfe7605ceee47
+      MAIL_HOST: smtp.gmail.com
+      MAIL_PORT: 587
+      MAIL_EMAIL: tochkarostaplatform@gmail.com
+      MAIL_PASS: e9b10f4d7c7dfe
+      APP_API_ENDPOINT: https://api.tochkarosta.info 
+      APP_UI_ENDPOINT: https://tochkarosta.info
+      YOUTUBE_CALLBACK: https://api.tochkarosta.info
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy_public"
+
+      - "traefik.http.routers.academy_api_https.entrypoints=websecure"
+      - "traefik.http.routers.academy_api_https.rule=Host(`api.tochkarosta.info`)"
+      - "traefik.http.routers.academy_api_https.tls=true"
+      - "traefik.http.routers.academy_api_https.tls.certresolver=le"
+                  
+    networks:
+      - public
+      - private
+  
+volumes:
+  db: {}
+  data: {}
+
+networks:
+  private: {}
+  public:
+    external:
+      name: proxy_public
+
